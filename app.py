@@ -4,6 +4,7 @@ from tkinter import filedialog
 import sqlite3
 import matplotlib.pyplot as plt
 
+
 class ProfitabilityApp(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -95,12 +96,21 @@ class InputPage(tk.Frame):
         self.graph_button = tk.Button(self, text="View Graph", command=lambda: controller.show_frame("GraphPage"))
         self.graph_button.pack(pady=5)
 
+    def clean_input(self, user_input):
+        """Cleans the user input by removing commas and converting to a float."""
+        try:
+            cleaned_input = user_input.replace(",", "")  # Remove commas
+            return float(cleaned_input)  # Convert to float
+        except ValueError:
+            raise ValueError(f"Invalid input: {user_input}. Please enter a valid number.")
+
     def calculate_profitability(self):
         try:
-            revenue = float(self.revenue_input.get())
-            cogs = float(self.cogs_input.get())
-            variable_costs = float(self.variable_costs_input.get())
-            fixed_costs = float(self.fixed_costs_input.get())
+            # Clean inputs to handle commas and decimals
+            revenue = self.clean_input(self.revenue_input.get())
+            cogs = self.clean_input(self.cogs_input.get())
+            variable_costs = self.clean_input(self.variable_costs_input.get())
+            fixed_costs = self.clean_input(self.fixed_costs_input.get())
 
             if revenue <= 0 or cogs < 0 or variable_costs < 0 or fixed_costs < 0:
                 raise ValueError("Please enter positive values.")
@@ -132,8 +142,8 @@ class InputPage(tk.Frame):
             # Show results page
             self.controller.show_frame("ResultPage")
 
-        except ValueError:
-            messagebox.showerror("Input Error", "Please enter valid positive numbers for all fields.")
+        except ValueError as e:
+            messagebox.showerror("Input Error", str(e))
 
 
 class ResultPage(tk.Frame):
@@ -150,10 +160,10 @@ class ResultPage(tk.Frame):
 
     def update_results(self, gross_profit, net_profit, profit_margin, break_even_units, break_even_revenue):
         """Update the result label with the latest calculation."""
-        self.results_label.config(text=f"Gross Profit: ${gross_profit:.2f}\nNet Profit: ${net_profit:.2f}\n"
+        self.results_label.config(text=f"Gross Profit: ${gross_profit:,.2f}\nNet Profit: ${net_profit:,.2f}\n"
                                        f"Profit Margin: {profit_margin:.2f}%\n"
-                                       f"Break-even Point: {break_even_units:.2f} units\n"
-                                       f"Break-even Revenue: ${break_even_revenue:.2f}")
+                                       f"Break-even Point: {break_even_units:,.2f} units\n"
+                                       f"Break-even Revenue: ${break_even_revenue:,.2f}")
 
 
 class GraphPage(tk.Frame):
@@ -193,4 +203,6 @@ class HistoryPage(tk.Frame):
         tk.Label(self, text="Previous Results", font=("Arial", 18)).pack(pady=10)
 
         self.history_text = tk.Text(self, width=50, height=20)
+        self.history_text.pack(pady=10)
+
         self
